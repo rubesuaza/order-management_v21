@@ -1,18 +1,16 @@
 package com.example.management.infrastructure.adapters.in.rest;
 
+import com.example.management.application.commands.AddOrderItemCommand;
 import com.example.management.application.commands.CreateOrderItemCommand;
 import com.example.management.application.ports.in.*;
-import com.example.management.domain.model.Money;
-import com.example.management.domain.model.Order;
 import com.example.management.domain.model.OrderId;
-import com.example.management.domain.model.OrderItem;
-import com.example.management.domain.model.Quantity;
 import com.example.management.infrastructure.adapters.in.rest.dto.*;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,14 +49,14 @@ public class OrderRestController {
             ))
             .collect(Collectors.toList());
         
-        Order order = createOrderUseCase.createOrder(request.customerId(), itemCommands);
-        return ResponseEntity.status(HttpStatus.CREATED).body(OrderResponse.fromDomain(order));
+        var orderDto = createOrderUseCase.createOrder(request.customerId(), itemCommands);
+        return ResponseEntity.status(HttpStatus.CREATED).body(OrderResponse.fromApplicationDto(orderDto));
     }
 
     @GetMapping("/{orderId}")
     public ResponseEntity<OrderResponse> getOrder(@PathVariable String orderId) {
         return getOrderUseCase.getOrder(new OrderId(orderId))
-            .map(order -> ResponseEntity.ok(OrderResponse.fromDomain(order)))
+            .map(orderDto -> ResponseEntity.ok(OrderResponse.fromApplicationDto(orderDto)))
             .orElse(ResponseEntity.notFound().build());
     }
 
@@ -87,9 +85,14 @@ public class OrderRestController {
             @PathVariable String orderId,
             @Valid @RequestBody AddOrderItemRequest request) {
         try {
-            OrderItem item = toDomainItem(request);
-            Order order = addOrderItemUseCase.addItemToOrder(new OrderId(orderId), item);
-            return ResponseEntity.ok(OrderResponse.fromDomain(order));
+            AddOrderItemCommand command = new AddOrderItemCommand(
+                request.productId(),
+                request.productName(),
+                BigDecimal.valueOf(request.unitPrice()),
+                request.quantity()
+            );
+            var orderDto = addOrderItemUseCase.addItemToOrder(new OrderId(orderId), command);
+            return ResponseEntity.ok(OrderResponse.fromApplicationDto(orderDto));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         } catch (IllegalStateException e) {
@@ -97,23 +100,14 @@ public class OrderRestController {
         }
     }
 
-    private ResponseEntity<OrderResponse> executeStatusUpdate(java.util.function.Supplier<Order> statusUpdateOperation) {
+    private ResponseEntity<OrderResponse> executeStatusUpdate(java.util.function.Supplier<com.example.management.application.dto.OrderDetailsDto> statusUpdateOperation) {
         try {
-            Order order = statusUpdateOperation.get();
-            return ResponseEntity.ok(OrderResponse.fromDomain(order));
+            var orderDto = statusUpdateOperation.get();
+            return ResponseEntity.ok(OrderResponse.fromApplicationDto(orderDto));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         } catch (IllegalStateException e) {
             return ResponseEntity.badRequest().build();
         }
-    }
-
-    private OrderItem toDomainItem(AddOrderItemRequest request) {
-        return new OrderItem(
-            request.productId(),
-            request.productName(),
-            new Money(request.unitPrice()),
-            new Quantity(request.quantity())
-        );
     }
 }

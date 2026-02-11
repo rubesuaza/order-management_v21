@@ -93,7 +93,7 @@ public class Order {
     public Money calculateTotal() {
         return items.stream()
             .map(OrderItem::calculateTotal)
-            .reduce(new Money(0.0), Money::add);
+            .reduce(new Money(java.math.BigDecimal.ZERO), Money::add);
     }
 
     /**

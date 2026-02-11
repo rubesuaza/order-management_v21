@@ -1,7 +1,6 @@
 package com.example.management.infrastructure.adapters.in.rest.dto;
 
-import com.example.management.domain.model.Order;
-import com.example.management.domain.model.OrderItem;
+import com.example.management.application.dto.OrderDetailsDto;
 import com.example.management.domain.model.OrderStatus;
 
 import java.time.LocalDateTime;
@@ -19,19 +18,19 @@ public record OrderResponse(
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {
-    public static OrderResponse fromDomain(Order order) {
-        List<OrderItemResponse> itemResponses = order.getItems().stream()
-            .map(OrderItemResponse::fromDomain)
+    public static OrderResponse fromApplicationDto(OrderDetailsDto orderDto) {
+        List<OrderItemResponse> itemResponses = orderDto.items().stream()
+            .map(OrderItemResponse::fromApplicationDto)
             .toList();
         
         return new OrderResponse(
-            order.getId(),
-            order.getCustomerId(),
-            order.getStatus(),
+            orderDto.id(),
+            orderDto.customerId(),
+            orderDto.status(),
             itemResponses,
-            order.calculateTotal().getValue().doubleValue(),
-            order.getCreatedAt(),
-            order.getUpdatedAt()
+            orderDto.total().doubleValue(),
+            orderDto.createdAt(),
+            orderDto.updatedAt()
         );
     }
 }

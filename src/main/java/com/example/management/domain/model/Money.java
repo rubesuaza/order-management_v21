@@ -14,10 +14,6 @@ public final class Money {
     
     private final BigDecimal value;
 
-    public Money(double value) {
-        this(BigDecimal.valueOf(value));
-    }
-
     public Money(BigDecimal value) {
         if (value == null) {
             throw new IllegalArgumentException("El valor del dinero no puede ser nulo");

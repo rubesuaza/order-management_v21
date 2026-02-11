@@ -1,6 +1,9 @@
 package com.example.management.application.services;
 
+import com.example.management.application.commands.AddOrderItemCommand;
 import com.example.management.application.commands.CreateOrderItemCommand;
+import com.example.management.application.dto.OrderDetailsDto;
+import com.example.management.application.dto.OrderItemDto;
 import com.example.management.application.ports.in.*;
 import com.example.management.application.ports.out.OrderRepository;
 import com.example.management.domain.model.Money;
@@ -26,62 +29,101 @@ public class OrderService implements CreateOrderUseCase, GetOrderUseCase,
     }
 
     @Override
-    public Order createOrder(String customerId, List<CreateOrderItemCommand> itemCommands) {
+    public OrderDetailsDto createOrder(String customerId, List<CreateOrderItemCommand> itemCommands) {
         List<OrderItem> items = itemCommands.stream()
             .map(command -> new OrderItem(
                 command.productId(),
                 command.productName(),
-                new Money(command.unitPrice()),
+                new Money(java.math.BigDecimal.valueOf(command.unitPrice())),
                 new Quantity(command.quantity())
             ))
             .collect(Collectors.toList());
         
         Order order = new Order(customerId, items);
-        return orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
+        return toOrderDetailsDto(savedOrder);
     }
 
     @Override
-    public Optional<Order> getOrder(OrderId orderId) {
-        return orderRepository.findById(orderId.getValue());
+    public Optional<OrderDetailsDto> getOrder(OrderId orderId) {
+        return orderRepository.findById(orderId.getValue())
+            .map(this::toOrderDetailsDto);
     }
 
     @Override
-    public Order confirmOrder(OrderId orderId) {
+    public OrderDetailsDto confirmOrder(OrderId orderId) {
         Order order = findOrderOrThrow(orderId);
         order.confirm();
-        return orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
+        return toOrderDetailsDto(savedOrder);
     }
 
     @Override
-    public Order shipOrder(OrderId orderId) {
+    public OrderDetailsDto shipOrder(OrderId orderId) {
         Order order = findOrderOrThrow(orderId);
         order.ship();
-        return orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
+        return toOrderDetailsDto(savedOrder);
     }
 
     @Override
-    public Order deliverOrder(OrderId orderId) {
+    public OrderDetailsDto deliverOrder(OrderId orderId) {
         Order order = findOrderOrThrow(orderId);
         order.deliver();
-        return orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
+        return toOrderDetailsDto(savedOrder);
     }
 
     @Override
-    public Order cancelOrder(OrderId orderId) {
+    public OrderDetailsDto cancelOrder(OrderId orderId) {
         Order order = findOrderOrThrow(orderId);
         order.cancel();
-        return orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
+        return toOrderDetailsDto(savedOrder);
     }
 
     @Override
-    public Order addItemToOrder(OrderId orderId, OrderItem item) {
+    public OrderDetailsDto addItemToOrder(OrderId orderId, AddOrderItemCommand command) {
         Order order = findOrderOrThrow(orderId);
+        OrderItem item = new OrderItem(
+            command.productId(),
+            command.productName(),
+            new Money(command.unitPrice()),
+            new Quantity(command.quantity())
+        );
         order.addItem(item);
-        return orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
+        return toOrderDetailsDto(savedOrder);
     }
 
     private Order findOrderOrThrow(OrderId orderId) {
         return orderRepository.findById(orderId.getValue())
             .orElseThrow(() -> new IllegalArgumentException("Orden no encontrada con ID: " + orderId.getValue()));
+    }
+
+    private OrderDetailsDto toOrderDetailsDto(Order order) {
+        List<OrderItemDto> itemDtos = order.getItems().stream()
+            .map(this::toOrderItemDto)
+            .collect(Collectors.toList());
+        
+        return new OrderDetailsDto(
+            order.getId(),
+            order.getCustomerId(),
+            order.getStatus(),
+            itemDtos,
+            order.calculateTotal().getValue(),
+            order.getCreatedAt(),
+            order.getUpdatedAt()
+        );
+    }
+
+    private OrderItemDto toOrderItemDto(OrderItem item) {
+        return new OrderItemDto(
+            item.getProductId(),
+            item.getProductName(),
+            item.getUnitPrice().getValue(),
+            item.getQuantity().getValue(),
+            item.calculateTotal().getValue()
+        );
     }
 }
