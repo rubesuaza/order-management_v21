@@ -2,16 +2,14 @@ package com.example.management.infrastructure.adapters.in.rest;
 
 import com.example.management.application.commands.AddOrderItemCommand;
 import com.example.management.application.commands.CreateOrderItemCommand;
+import com.example.management.application.exception.ApplicationOrderNotFoundException;
 import com.example.management.application.ports.in.*;
-import com.example.management.domain.exception.OrderNotFoundException;
-import com.example.management.domain.model.OrderId;
 import com.example.management.infrastructure.adapters.in.rest.dto.*;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,7 +46,7 @@ public class OrderRestController {
                 item.unitPrice(),
                 item.quantity()
             ))
-            .collect(Collectors.toList());
+            .collect(Collectors.toUnmodifiableList());
         
         var orderDto = createOrderUseCase.createOrder(request.customerId(), itemCommands);
         return ResponseEntity.status(HttpStatus.CREATED).body(OrderResponse.fromApplicationDto(orderDto));
@@ -56,29 +54,29 @@ public class OrderRestController {
 
     @GetMapping("/{orderId}")
     public ResponseEntity<OrderResponse> getOrder(@PathVariable String orderId) {
-        return getOrderUseCase.getOrder(new OrderId(orderId))
+        return getOrderUseCase.getOrder(orderId)
             .map(orderDto -> ResponseEntity.ok(OrderResponse.fromApplicationDto(orderDto)))
             .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping("/{orderId}/confirm")
     public ResponseEntity<OrderResponse> confirmOrder(@PathVariable String orderId) {
-        return executeStatusUpdate(() -> updateOrderStatusUseCase.confirmOrder(new OrderId(orderId)));
+        return executeStatusUpdate(() -> updateOrderStatusUseCase.confirmOrder(orderId));
     }
 
     @PostMapping("/{orderId}/ship")
     public ResponseEntity<OrderResponse> shipOrder(@PathVariable String orderId) {
-        return executeStatusUpdate(() -> updateOrderStatusUseCase.shipOrder(new OrderId(orderId)));
+        return executeStatusUpdate(() -> updateOrderStatusUseCase.shipOrder(orderId));
     }
 
     @PostMapping("/{orderId}/deliver")
     public ResponseEntity<OrderResponse> deliverOrder(@PathVariable String orderId) {
-        return executeStatusUpdate(() -> updateOrderStatusUseCase.deliverOrder(new OrderId(orderId)));
+        return executeStatusUpdate(() -> updateOrderStatusUseCase.deliverOrder(orderId));
     }
 
     @PostMapping("/{orderId}/cancel")
     public ResponseEntity<OrderResponse> cancelOrder(@PathVariable String orderId) {
-        return executeStatusUpdate(() -> updateOrderStatusUseCase.cancelOrder(new OrderId(orderId)));
+        return executeStatusUpdate(() -> updateOrderStatusUseCase.cancelOrder(orderId));
     }
 
     @PostMapping("/{orderId}/items")
@@ -89,12 +87,12 @@ public class OrderRestController {
             AddOrderItemCommand command = new AddOrderItemCommand(
                 request.productId(),
                 request.productName(),
-                BigDecimal.valueOf(request.unitPrice()),
+                request.unitPrice(),
                 request.quantity()
             );
-            var orderDto = addOrderItemUseCase.addItemToOrder(new OrderId(orderId), command);
+            var orderDto = addOrderItemUseCase.addItemToOrder(orderId, command);
             return ResponseEntity.ok(OrderResponse.fromApplicationDto(orderDto));
-        } catch (OrderNotFoundException e) {
+        } catch (ApplicationOrderNotFoundException e) {
             return ResponseEntity.notFound().build();
         } catch (IllegalStateException e) {
             return ResponseEntity.badRequest().build();
@@ -105,7 +103,7 @@ public class OrderRestController {
         try {
             var orderDto = statusUpdateOperation.get();
             return ResponseEntity.ok(OrderResponse.fromApplicationDto(orderDto));
-        } catch (OrderNotFoundException e) {
+        } catch (ApplicationOrderNotFoundException e) {
             return ResponseEntity.notFound().build();
         } catch (IllegalStateException e) {
             return ResponseEntity.badRequest().build();

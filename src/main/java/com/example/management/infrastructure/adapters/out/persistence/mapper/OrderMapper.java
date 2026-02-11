@@ -58,7 +58,7 @@ public class OrderMapper {
             orderEntity,
             item.getProductId(),
             item.getProductName(),
-            item.getUnitPrice().getValue().doubleValue(),
+            item.getUnitPrice().getValue(),
             item.getQuantity().getValue()
         );
     }
@@ -67,7 +67,7 @@ public class OrderMapper {
         return new OrderItem(
             entity.getProductId(),
             entity.getProductName(),
-            new Money(java.math.BigDecimal.valueOf(entity.getUnitPrice())),
+            new Money(entity.getUnitPrice()),
             new Quantity(entity.getQuantity())
         );
     }

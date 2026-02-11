@@ -5,7 +5,6 @@ import com.example.management.application.commands.CreateOrderItemCommand;
 import com.example.management.application.dto.OrderDetailsDto;
 import com.example.management.application.ports.in.*;
 import com.example.management.application.services.OrderService;
-import com.example.management.domain.model.OrderId;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,37 +35,37 @@ public class TransactionalOrderService implements
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<OrderDetailsDto> getOrder(OrderId orderId) {
+    public Optional<OrderDetailsDto> getOrder(String orderId) {
         return orderService.getOrder(orderId);
     }
 
     @Override
     @Transactional
-    public OrderDetailsDto confirmOrder(OrderId orderId) {
+    public OrderDetailsDto confirmOrder(String orderId) {
         return orderService.confirmOrder(orderId);
     }
 
     @Override
     @Transactional
-    public OrderDetailsDto shipOrder(OrderId orderId) {
+    public OrderDetailsDto shipOrder(String orderId) {
         return orderService.shipOrder(orderId);
     }
 
     @Override
     @Transactional
-    public OrderDetailsDto deliverOrder(OrderId orderId) {
+    public OrderDetailsDto deliverOrder(String orderId) {
         return orderService.deliverOrder(orderId);
     }
 
     @Override
     @Transactional
-    public OrderDetailsDto cancelOrder(OrderId orderId) {
+    public OrderDetailsDto cancelOrder(String orderId) {
         return orderService.cancelOrder(orderId);
     }
 
     @Override
     @Transactional
-    public OrderDetailsDto addItemToOrder(OrderId orderId, AddOrderItemCommand command) {
+    public OrderDetailsDto addItemToOrder(String orderId, AddOrderItemCommand command) {
         return orderService.addItemToOrder(orderId, command);
     }
 }

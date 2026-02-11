@@ -4,6 +4,7 @@ import com.example.management.application.commands.AddOrderItemCommand;
 import com.example.management.application.commands.CreateOrderItemCommand;
 import com.example.management.application.dto.OrderDetailsDto;
 import com.example.management.application.dto.OrderItemDto;
+import com.example.management.application.exception.ApplicationOrderNotFoundException;
 import com.example.management.application.ports.in.*;
 import com.example.management.application.ports.out.OrderRepository;
 import com.example.management.domain.exception.OrderNotFoundException;
@@ -46,13 +47,13 @@ public class OrderService implements CreateOrderUseCase, GetOrderUseCase,
     }
 
     @Override
-    public Optional<OrderDetailsDto> getOrder(OrderId orderId) {
-        return orderRepository.findById(orderId.getValue())
+    public Optional<OrderDetailsDto> getOrder(String orderId) {
+        return orderRepository.findById(orderId)
             .map(this::toOrderDetailsDto);
     }
 
     @Override
-    public OrderDetailsDto confirmOrder(OrderId orderId) {
+    public OrderDetailsDto confirmOrder(String orderId) {
         Order order = findOrderOrThrow(orderId);
         order.confirm();
         Order savedOrder = orderRepository.save(order);
@@ -60,7 +61,7 @@ public class OrderService implements CreateOrderUseCase, GetOrderUseCase,
     }
 
     @Override
-    public OrderDetailsDto shipOrder(OrderId orderId) {
+    public OrderDetailsDto shipOrder(String orderId) {
         Order order = findOrderOrThrow(orderId);
         order.ship();
         Order savedOrder = orderRepository.save(order);
@@ -68,7 +69,7 @@ public class OrderService implements CreateOrderUseCase, GetOrderUseCase,
     }
 
     @Override
-    public OrderDetailsDto deliverOrder(OrderId orderId) {
+    public OrderDetailsDto deliverOrder(String orderId) {
         Order order = findOrderOrThrow(orderId);
         order.deliver();
         Order savedOrder = orderRepository.save(order);
@@ -76,7 +77,7 @@ public class OrderService implements CreateOrderUseCase, GetOrderUseCase,
     }
 
     @Override
-    public OrderDetailsDto cancelOrder(OrderId orderId) {
+    public OrderDetailsDto cancelOrder(String orderId) {
         Order order = findOrderOrThrow(orderId);
         order.cancel();
         Order savedOrder = orderRepository.save(order);
@@ -84,7 +85,7 @@ public class OrderService implements CreateOrderUseCase, GetOrderUseCase,
     }
 
     @Override
-    public OrderDetailsDto addItemToOrder(OrderId orderId, AddOrderItemCommand command) {
+    public OrderDetailsDto addItemToOrder(String orderId, AddOrderItemCommand command) {
         Order order = findOrderOrThrow(orderId);
         OrderItem item = new OrderItem(
             command.productId(),
@@ -97,9 +98,13 @@ public class OrderService implements CreateOrderUseCase, GetOrderUseCase,
         return toOrderDetailsDto(savedOrder);
     }
 
-    private Order findOrderOrThrow(OrderId orderId) {
-        return orderRepository.findById(orderId.getValue())
-            .orElseThrow(() -> new OrderNotFoundException("Orden no encontrada con ID: " + orderId.getValue()));
+    private Order findOrderOrThrow(String orderId) {
+        try {
+            return orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException("Orden no encontrada con ID: " + orderId));
+        } catch (OrderNotFoundException e) {
+            throw new ApplicationOrderNotFoundException("Orden no encontrada con ID: " + orderId);
+        }
     }
 
     private OrderDetailsDto toOrderDetailsDto(Order order) {

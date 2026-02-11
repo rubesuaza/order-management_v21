@@ -1,7 +1,6 @@
 package com.example.management.application.ports.in;
 
 import com.example.management.application.dto.OrderDetailsDto;
-import com.example.management.domain.model.OrderId;
 
 /**
  * Puerto de entrada para actualizar el estado de una orden.
@@ -9,29 +8,29 @@ import com.example.management.domain.model.OrderId;
 public interface UpdateOrderStatusUseCase {
     /**
      * Confirma una orden.
-     * @param orderId El ID de la orden
+     * @param orderId El ID de la orden como String
      * @return La orden confirmada
      */
-    OrderDetailsDto confirmOrder(OrderId orderId);
+    OrderDetailsDto confirmOrder(String orderId);
 
     /**
      * Envía una orden.
-     * @param orderId El ID de la orden
+     * @param orderId El ID de la orden como String
      * @return La orden enviada
      */
-    OrderDetailsDto shipOrder(OrderId orderId);
+    OrderDetailsDto shipOrder(String orderId);
 
     /**
      * Marca una orden como entregada.
-     * @param orderId El ID de la orden
+     * @param orderId El ID de la orden como String
      * @return La orden entregada
      */
-    OrderDetailsDto deliverOrder(OrderId orderId);
+    OrderDetailsDto deliverOrder(String orderId);
 
     /**
      * Cancela una orden.
-     * @param orderId El ID de la orden
+     * @param orderId El ID de la orden como String
      * @return La orden cancelada
      */
-    OrderDetailsDto cancelOrder(OrderId orderId);
+    OrderDetailsDto cancelOrder(String orderId);
 }

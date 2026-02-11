@@ -1,7 +1,6 @@
 package com.example.management.application.ports.in;
 
 import com.example.management.application.dto.OrderDetailsDto;
-import com.example.management.domain.model.OrderId;
 import java.util.Optional;
 
 /**
@@ -10,8 +9,8 @@ import java.util.Optional;
 public interface GetOrderUseCase {
     /**
      * Obtiene una orden por su ID.
-     * @param orderId El ID de la orden
+     * @param orderId El ID de la orden como String
      * @return La orden si existe, Optional vacío en caso contrario
      */
-    Optional<OrderDetailsDto> getOrder(OrderId orderId);
+    Optional<OrderDetailsDto> getOrder(String orderId);
 }

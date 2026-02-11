@@ -2,6 +2,8 @@ package com.example.management.infrastructure.adapters.out.persistence.entity;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
+
 /**
  * Entidad JPA que representa un item de orden en la base de datos.
  */
@@ -22,8 +24,8 @@ public class OrderItemEntity {
     @Column(nullable = false)
     private String productName;
 
-    @Column(nullable = false)
-    private Double unitPrice;
+    @Column(nullable = false, precision = 19, scale = 2)
+    private BigDecimal unitPrice;
 
     @Column(nullable = false)
     private Integer quantity;
@@ -33,7 +35,7 @@ public class OrderItemEntity {
     }
 
     public OrderItemEntity(OrderEntity order, String productId, String productName, 
-                          Double unitPrice, Integer quantity) {
+                          BigDecimal unitPrice, Integer quantity) {
         this.order = order;
         this.productId = productId;
         this.productName = productName;
@@ -73,11 +75,11 @@ public class OrderItemEntity {
         this.productName = productName;
     }
 
-    public Double getUnitPrice() {
+    public BigDecimal getUnitPrice() {
         return unitPrice;
     }
 
-    public void setUnitPrice(Double unitPrice) {
+    public void setUnitPrice(BigDecimal unitPrice) {
         this.unitPrice = unitPrice;
     }
 

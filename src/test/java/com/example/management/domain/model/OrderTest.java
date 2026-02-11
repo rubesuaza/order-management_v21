@@ -30,7 +30,7 @@ class OrderTest {
     void shouldCalculateOrderTotalCorrectly() {
         List<OrderItem> items = new ArrayList<>();
         items.add(new OrderItem("PROD-001", "Producto 1", new Money(java.math.BigDecimal.valueOf(10.0)), new Quantity(2)));
-        items.add(new OrderItem("PROD-002", "Producto 2", new Money(java.math.BigDecimal.valueOf(15.0), new Quantity(3)));
+        items.add(new OrderItem("PROD-002", "Producto 2", new Money(java.math.BigDecimal.valueOf(15.0)), new Quantity(3)));
         
         Order order = new Order("CUST-001", items);
         Money total = order.calculateTotal();
@@ -74,7 +74,7 @@ class OrderTest {
     @DisplayName("Debe confirmar un pedido pendiente")
     void shouldConfirmPendingOrder() {
         List<OrderItem> items = new ArrayList<>();
-        items.add(new OrderItem("PROD-001", "Producto", new Money(java.math.BigDecimal.valueOf(10.0), new Quantity(1)));
+        items.add(new OrderItem("PROD-001", "Producto", new Money(java.math.BigDecimal.valueOf(10.0)), new Quantity(1)));
         Order order = new Order("CUST-001", items);
         
         order.confirm();
@@ -86,7 +86,7 @@ class OrderTest {
     @DisplayName("Debe lanzar excepción al confirmar pedido no pendiente")
     void shouldThrowExceptionWhenConfirmingNonPendingOrder() {
         List<OrderItem> items = new ArrayList<>();
-        items.add(new OrderItem("PROD-001", "Producto", new Money(java.math.BigDecimal.valueOf(10.0), new Quantity(1)));
+        items.add(new OrderItem("PROD-001", "Producto", new Money(java.math.BigDecimal.valueOf(10.0)), new Quantity(1)));
         Order order = new Order("CUST-001", items);
         order.confirm();
         
@@ -99,7 +99,7 @@ class OrderTest {
     @DisplayName("Debe cancelar un pedido pendiente")
     void shouldCancelPendingOrder() {
         List<OrderItem> items = new ArrayList<>();
-        items.add(new OrderItem("PROD-001", "Producto", new Money(java.math.BigDecimal.valueOf(10.0), new Quantity(1)));
+        items.add(new OrderItem("PROD-001", "Producto", new Money(java.math.BigDecimal.valueOf(10.0)), new Quantity(1)));
         Order order = new Order("CUST-001", items);
         
         order.cancel();
@@ -111,7 +111,7 @@ class OrderTest {
     @DisplayName("Debe cancelar un pedido confirmado")
     void shouldCancelConfirmedOrder() {
         List<OrderItem> items = new ArrayList<>();
-        items.add(new OrderItem("PROD-001", "Producto", new Money(java.math.BigDecimal.valueOf(10.0), new Quantity(1)));
+        items.add(new OrderItem("PROD-001", "Producto", new Money(java.math.BigDecimal.valueOf(10.0)), new Quantity(1)));
         Order order = new Order("CUST-001", items);
         order.confirm();
         
@@ -124,7 +124,7 @@ class OrderTest {
     @DisplayName("Debe lanzar excepción al cancelar pedido enviado")
     void shouldThrowExceptionWhenCancellingShippedOrder() {
         List<OrderItem> items = new ArrayList<>();
-        items.add(new OrderItem("PROD-001", "Producto", new Money(java.math.BigDecimal.valueOf(10.0), new Quantity(1)));
+        items.add(new OrderItem("PROD-001", "Producto", new Money(java.math.BigDecimal.valueOf(10.0)), new Quantity(1)));
         Order order = new Order("CUST-001", items);
         order.confirm();
         order.ship();
@@ -138,7 +138,7 @@ class OrderTest {
     @DisplayName("Debe enviar un pedido confirmado")
     void shouldShipConfirmedOrder() {
         List<OrderItem> items = new ArrayList<>();
-        items.add(new OrderItem("PROD-001", "Producto", new Money(java.math.BigDecimal.valueOf(10.0), new Quantity(1)));
+        items.add(new OrderItem("PROD-001", "Producto", new Money(java.math.BigDecimal.valueOf(10.0)), new Quantity(1)));
         Order order = new Order("CUST-001", items);
         order.confirm();
         
@@ -151,7 +151,7 @@ class OrderTest {
     @DisplayName("Debe marcar como entregado un pedido enviado")
     void shouldDeliverShippedOrder() {
         List<OrderItem> items = new ArrayList<>();
-        items.add(new OrderItem("PROD-001", "Producto", new Money(java.math.BigDecimal.valueOf(10.0), new Quantity(1)));
+        items.add(new OrderItem("PROD-001", "Producto", new Money(java.math.BigDecimal.valueOf(10.0)), new Quantity(1)));
         Order order = new Order("CUST-001", items);
         order.confirm();
         order.ship();
@@ -165,7 +165,7 @@ class OrderTest {
     @DisplayName("Debe agregar item a un pedido pendiente")
     void shouldAddItemToPendingOrder() {
         List<OrderItem> items = new ArrayList<>();
-        items.add(new OrderItem("PROD-001", "Producto 1", new Money(java.math.BigDecimal.valueOf(10.0), new Quantity(1)));
+        items.add(new OrderItem("PROD-001", "Producto 1", new Money(java.math.BigDecimal.valueOf(10.0)), new Quantity(1)));
         Order order = new Order("CUST-001", items);
         
         OrderItem newItem = new OrderItem("PROD-002", "Producto 2", new Money(java.math.BigDecimal.valueOf(20.0)), new Quantity(2));
@@ -179,7 +179,7 @@ class OrderTest {
     @DisplayName("Debe lanzar excepción al agregar item a pedido no pendiente")
     void shouldThrowExceptionWhenAddingItemToNonPendingOrder() {
         List<OrderItem> items = new ArrayList<>();
-        items.add(new OrderItem("PROD-001", "Producto", new Money(java.math.BigDecimal.valueOf(10.0), new Quantity(1)));
+        items.add(new OrderItem("PROD-001", "Producto", new Money(java.math.BigDecimal.valueOf(10.0)), new Quantity(1)));
         Order order = new Order("CUST-001", items);
         order.confirm();
         
