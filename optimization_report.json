@@ -1,0 +1,43 @@
+{
+  "summary": "Refactorizado código del dominio e infraestructura para mejorar rendimiento, legibilidad y precisión monetaria.",
+  "files_created": [],
+  "files_modified": [
+    "src/main/java/com/example/management/domain/model/Order.java",
+    "src/main/java/com/example/management/domain/model/Money.java",
+    "src/main/java/com/example/management/infrastructure/adapters/out/persistence/mapper/OrderMapper.java",
+    "src/main/java/com/example/management/infrastructure/adapters/in/rest/OrderRestController.java"
+  ],
+  "optimizations_applied": [
+    {
+      "type": "Performance",
+      "file": "Order.java",
+      "description": "Optimizado calculateTotal() usando Streams de Java en lugar de bucle for tradicional, mejorando legibilidad y aprovechando optimizaciones del compilador."
+    },
+    {
+      "type": "Performance",
+      "file": "OrderMapper.java",
+      "description": "Eliminada reflexión costosa en reconstructOrder() reemplazándola por constructor directo, mejorando rendimiento y mantenibilidad."
+    },
+    {
+      "type": "Readability",
+      "file": "OrderRestController.java",
+      "description": "Extraído método común executeStatusUpdate() para eliminar duplicación de código en manejo de excepciones, reduciendo complejidad ciclomática."
+    },
+    {
+      "type": "Correctness",
+      "file": "Money.java",
+      "description": "Cambiado de double a BigDecimal para precisión monetaria, evitando errores de redondeo en cálculos financieros."
+    },
+    {
+      "type": "Performance",
+      "file": "OrderMapper.java",
+      "description": "Reemplazado Collectors.toList() por .toList() (Java 16+) para mejor rendimiento y código más moderno."
+    },
+    {
+      "type": "Performance",
+      "file": "OrderRestController.java",
+      "description": "Reemplazado Collectors.toList() por .toList() (Java 16+) para mejor rendimiento y código más moderno."
+    }
+  ],
+  "requires_checkpoint": false
+}
