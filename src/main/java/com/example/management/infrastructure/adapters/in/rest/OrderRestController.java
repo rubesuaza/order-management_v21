@@ -3,6 +3,7 @@ package com.example.management.infrastructure.adapters.in.rest;
 import com.example.management.application.commands.AddOrderItemCommand;
 import com.example.management.application.commands.CreateOrderItemCommand;
 import com.example.management.application.ports.in.*;
+import com.example.management.domain.exception.OrderNotFoundException;
 import com.example.management.domain.model.OrderId;
 import com.example.management.infrastructure.adapters.in.rest.dto.*;
 import jakarta.validation.Valid;
@@ -93,7 +94,7 @@ public class OrderRestController {
             );
             var orderDto = addOrderItemUseCase.addItemToOrder(new OrderId(orderId), command);
             return ResponseEntity.ok(OrderResponse.fromApplicationDto(orderDto));
-        } catch (IllegalArgumentException e) {
+        } catch (OrderNotFoundException e) {
             return ResponseEntity.notFound().build();
         } catch (IllegalStateException e) {
             return ResponseEntity.badRequest().build();
@@ -104,7 +105,7 @@ public class OrderRestController {
         try {
             var orderDto = statusUpdateOperation.get();
             return ResponseEntity.ok(OrderResponse.fromApplicationDto(orderDto));
-        } catch (IllegalArgumentException e) {
+        } catch (OrderNotFoundException e) {
             return ResponseEntity.notFound().build();
         } catch (IllegalStateException e) {
             return ResponseEntity.badRequest().build();

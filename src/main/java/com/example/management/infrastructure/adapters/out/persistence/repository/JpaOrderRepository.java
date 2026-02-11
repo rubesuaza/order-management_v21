@@ -1,5 +1,6 @@
 package com.example.management.infrastructure.adapters.out.persistence.repository;
 
+import com.example.management.application.ports.out.OrderRepository;
 import com.example.management.domain.model.Order;
 import com.example.management.infrastructure.adapters.out.persistence.entity.OrderEntity;
 import com.example.management.infrastructure.adapters.out.persistence.mapper.OrderMapper;
@@ -18,7 +19,7 @@ interface OrderJpaRepository extends JpaRepository<OrderEntity, String> {
  * Implementación del adaptador de persistencia para OrderRepository.
  */
 @Repository
-public class JpaOrderRepository implements com.example.management.application.ports.out.OrderRepository {
+public class JpaOrderRepository implements OrderRepository {
 
     private final OrderJpaRepository jpaRepository;
     private final OrderMapper mapper;

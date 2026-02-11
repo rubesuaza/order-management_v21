@@ -1,7 +1,6 @@
 package com.example.management.infrastructure.adapters.in.rest.dto;
 
 import com.example.management.application.dto.OrderDetailsDto;
-import com.example.management.domain.model.OrderStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,7 +11,7 @@ import java.util.List;
 public record OrderResponse(
     String id,
     String customerId,
-    OrderStatus status,
+    String status,
     List<OrderItemResponse> items,
     Double total,
     LocalDateTime createdAt,
@@ -26,7 +25,7 @@ public record OrderResponse(
         return new OrderResponse(
             orderDto.id(),
             orderDto.customerId(),
-            orderDto.status(),
+            orderDto.status().name(),
             itemResponses,
             orderDto.total().doubleValue(),
             orderDto.createdAt(),

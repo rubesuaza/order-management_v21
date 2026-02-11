@@ -30,10 +30,6 @@ public class Order {
              LocalDateTime.now(), LocalDateTime.now());
     }
 
-    /**
-     * Constructor para reconstruir una orden desde la persistencia.
-     * Solo debe ser usado por adaptadores de infraestructura.
-     */
     public Order(String id, String customerId, List<OrderItem> items, 
                  OrderStatus status, LocalDateTime createdAt, LocalDateTime updatedAt) {
         if (id == null || id.trim().isEmpty()) {

@@ -14,7 +14,7 @@ class OrderTest {
     void shouldCreateOrderWithValidFields() {
         String customerId = "CUST-001";
         List<OrderItem> items = new ArrayList<>();
-        items.add(new OrderItem("PROD-001", "Producto 1", new Money(java.math.BigDecimal.valueOf(10.0), new Quantity(2)));
+        items.add(new OrderItem("PROD-001", "Producto 1", new Money(java.math.BigDecimal.valueOf(10.0)), new Quantity(2)));
         
         Order order = new Order(customerId, items);
         
@@ -29,7 +29,7 @@ class OrderTest {
     @DisplayName("Debe calcular el total del pedido correctamente")
     void shouldCalculateOrderTotalCorrectly() {
         List<OrderItem> items = new ArrayList<>();
-        items.add(new OrderItem("PROD-001", "Producto 1", new Money(java.math.BigDecimal.valueOf(10.0), new Quantity(2)));
+        items.add(new OrderItem("PROD-001", "Producto 1", new Money(java.math.BigDecimal.valueOf(10.0)), new Quantity(2)));
         items.add(new OrderItem("PROD-002", "Producto 2", new Money(java.math.BigDecimal.valueOf(15.0), new Quantity(3)));
         
         Order order = new Order("CUST-001", items);

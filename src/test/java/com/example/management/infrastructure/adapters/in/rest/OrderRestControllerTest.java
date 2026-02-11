@@ -1,11 +1,12 @@
 package com.example.management.infrastructure.adapters.in.rest;
 
+import com.example.management.application.commands.AddOrderItemCommand;
+import com.example.management.application.commands.CreateOrderItemCommand;
+import com.example.management.application.dto.OrderDetailsDto;
+import com.example.management.application.dto.OrderItemDto;
 import com.example.management.application.ports.in.*;
-import com.example.management.domain.model.Money;
-import com.example.management.domain.model.Order;
 import com.example.management.domain.model.OrderId;
-import com.example.management.domain.model.OrderItem;
-import com.example.management.domain.model.Quantity;
+import com.example.management.domain.model.OrderStatus;
 import com.example.management.infrastructure.adapters.in.rest.dto.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,12 +17,13 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -51,17 +53,74 @@ class OrderRestControllerTest {
     @MockBean
     private AddOrderItemUseCase addOrderItemUseCase;
 
-    private OrderItem testItem;
-    private Order testOrder;
+    private OrderDetailsDto testOrderDto;
+    private OrderDetailsDto confirmedOrderDto;
+    private OrderDetailsDto shippedOrderDto;
+    private OrderDetailsDto deliveredOrderDto;
+    private OrderDetailsDto cancelledOrderDto;
+    private OrderDetailsDto orderWithTwoItemsDto;
     private String testOrderId;
     private String testCustomerId;
 
     @BeforeEach
     void setUp() {
         testCustomerId = "CUSTOMER-001";
-        testItem = new OrderItem("PROD-001", "Producto 1", new Money(10.0), new Quantity(2));
-        testOrder = new Order(testCustomerId, Arrays.asList(testItem));
-        testOrderId = testOrder.getId();
+        testOrderId = "ORDER-001";
+        
+        OrderItemDto testItemDto = new OrderItemDto(
+            "PROD-001", "Producto 1", BigDecimal.valueOf(10.0), 2, BigDecimal.valueOf(20.0)
+        );
+        
+        testOrderDto = new OrderDetailsDto(
+            testOrderId, testCustomerId, OrderStatus.PENDING,
+            Arrays.asList(testItemDto),
+            BigDecimal.valueOf(20.0),
+            LocalDateTime.now(),
+            LocalDateTime.now()
+        );
+        
+        confirmedOrderDto = new OrderDetailsDto(
+            testOrderId, testCustomerId, OrderStatus.CONFIRMED,
+            Arrays.asList(testItemDto),
+            BigDecimal.valueOf(20.0),
+            LocalDateTime.now(),
+            LocalDateTime.now()
+        );
+        
+        shippedOrderDto = new OrderDetailsDto(
+            testOrderId, testCustomerId, OrderStatus.SHIPPED,
+            Arrays.asList(testItemDto),
+            BigDecimal.valueOf(20.0),
+            LocalDateTime.now(),
+            LocalDateTime.now()
+        );
+        
+        deliveredOrderDto = new OrderDetailsDto(
+            testOrderId, testCustomerId, OrderStatus.DELIVERED,
+            Arrays.asList(testItemDto),
+            BigDecimal.valueOf(20.0),
+            LocalDateTime.now(),
+            LocalDateTime.now()
+        );
+        
+        cancelledOrderDto = new OrderDetailsDto(
+            testOrderId, testCustomerId, OrderStatus.CANCELLED,
+            Arrays.asList(testItemDto),
+            BigDecimal.valueOf(20.0),
+            LocalDateTime.now(),
+            LocalDateTime.now()
+        );
+        
+        OrderItemDto secondItemDto = new OrderItemDto(
+            "PROD-002", "Producto 2", BigDecimal.valueOf(15.0), 1, BigDecimal.valueOf(15.0)
+        );
+        orderWithTwoItemsDto = new OrderDetailsDto(
+            testOrderId, testCustomerId, OrderStatus.PENDING,
+            Arrays.asList(testItemDto, secondItemDto),
+            BigDecimal.valueOf(35.0),
+            LocalDateTime.now(),
+            LocalDateTime.now()
+        );
     }
 
     @Test
@@ -73,14 +132,14 @@ class OrderRestControllerTest {
         );
 
         when(createOrderUseCase.createOrder(any(String.class), any(List.class)))
-            .thenReturn(testOrder);
+            .thenReturn(testOrderDto);
 
         // When & Then
         mockMvc.perform(post("/api/orders")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.id").exists())
+            .andExpect(jsonPath("$.id").value(testOrderId))
             .andExpect(jsonPath("$.customerId").value(testCustomerId))
             .andExpect(jsonPath("$.status").value("PENDING"))
             .andExpect(jsonPath("$.items").isArray())
@@ -91,7 +150,7 @@ class OrderRestControllerTest {
     void shouldGetOrder() throws Exception {
         // Given
         when(getOrderUseCase.getOrder(any(OrderId.class)))
-            .thenReturn(Optional.of(testOrder));
+            .thenReturn(Optional.of(testOrderDto));
 
         // When & Then
         mockMvc.perform(get("/api/orders/{orderId}", testOrderId))
@@ -114,9 +173,8 @@ class OrderRestControllerTest {
     @Test
     void shouldConfirmOrder() throws Exception {
         // Given
-        testOrder.confirm();
         when(updateOrderStatusUseCase.confirmOrder(any(OrderId.class)))
-            .thenReturn(testOrder);
+            .thenReturn(confirmedOrderDto);
 
         // When & Then
         mockMvc.perform(post("/api/orders/{orderId}/confirm", testOrderId))
@@ -127,10 +185,8 @@ class OrderRestControllerTest {
     @Test
     void shouldShipOrder() throws Exception {
         // Given
-        testOrder.confirm();
-        testOrder.ship();
         when(updateOrderStatusUseCase.shipOrder(any(OrderId.class)))
-            .thenReturn(testOrder);
+            .thenReturn(shippedOrderDto);
 
         // When & Then
         mockMvc.perform(post("/api/orders/{orderId}/ship", testOrderId))
@@ -141,11 +197,8 @@ class OrderRestControllerTest {
     @Test
     void shouldDeliverOrder() throws Exception {
         // Given
-        testOrder.confirm();
-        testOrder.ship();
-        testOrder.deliver();
         when(updateOrderStatusUseCase.deliverOrder(any(OrderId.class)))
-            .thenReturn(testOrder);
+            .thenReturn(deliveredOrderDto);
 
         // When & Then
         mockMvc.perform(post("/api/orders/{orderId}/deliver", testOrderId))
@@ -156,9 +209,8 @@ class OrderRestControllerTest {
     @Test
     void shouldCancelOrder() throws Exception {
         // Given
-        testOrder.cancel();
         when(updateOrderStatusUseCase.cancelOrder(any(OrderId.class)))
-            .thenReturn(testOrder);
+            .thenReturn(cancelledOrderDto);
 
         // When & Then
         mockMvc.perform(post("/api/orders/{orderId}/cancel", testOrderId))
@@ -169,15 +221,12 @@ class OrderRestControllerTest {
     @Test
     void shouldAddItemToOrder() throws Exception {
         // Given
-        OrderItem newItem = new OrderItem("PROD-002", "Producto 2", new Money(15.0), new Quantity(1));
-        testOrder.addItem(newItem);
-
         AddOrderItemRequest request = new AddOrderItemRequest(
             "PROD-002", "Producto 2", 15.0, 1
         );
 
-        when(addOrderItemUseCase.addItemToOrder(any(OrderId.class), any(OrderItem.class)))
-            .thenReturn(testOrder);
+        when(addOrderItemUseCase.addItemToOrder(any(OrderId.class), any(AddOrderItemCommand.class)))
+            .thenReturn(orderWithTwoItemsDto);
 
         // When & Then
         mockMvc.perform(post("/api/orders/{orderId}/items", testOrderId)

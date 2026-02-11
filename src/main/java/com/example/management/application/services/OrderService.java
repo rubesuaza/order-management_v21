@@ -6,6 +6,7 @@ import com.example.management.application.dto.OrderDetailsDto;
 import com.example.management.application.dto.OrderItemDto;
 import com.example.management.application.ports.in.*;
 import com.example.management.application.ports.out.OrderRepository;
+import com.example.management.domain.exception.OrderNotFoundException;
 import com.example.management.domain.model.Money;
 import com.example.management.domain.model.Order;
 import com.example.management.domain.model.OrderId;
@@ -98,7 +99,7 @@ public class OrderService implements CreateOrderUseCase, GetOrderUseCase,
 
     private Order findOrderOrThrow(OrderId orderId) {
         return orderRepository.findById(orderId.getValue())
-            .orElseThrow(() -> new IllegalArgumentException("Orden no encontrada con ID: " + orderId.getValue()));
+            .orElseThrow(() -> new OrderNotFoundException("Orden no encontrada con ID: " + orderId.getValue()));
     }
 
     private OrderDetailsDto toOrderDetailsDto(Order order) {
