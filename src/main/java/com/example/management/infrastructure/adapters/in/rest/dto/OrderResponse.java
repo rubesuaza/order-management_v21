@@ -29,7 +29,7 @@ public record OrderResponse(
             order.getCustomerId(),
             order.getStatus(),
             itemResponses,
-            order.calculateTotal().getValue(),
+            order.calculateTotal().getValue().doubleValue(),
             order.getCreatedAt(),
             order.getUpdatedAt()
         );

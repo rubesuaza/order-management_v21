@@ -16,9 +16,9 @@ public record OrderItemResponse(
         return new OrderItemResponse(
             item.getProductId(),
             item.getProductName(),
-            item.getUnitPrice().getValue(),
+            item.getUnitPrice().getValue().doubleValue(),
             item.getQuantity().getValue(),
-            item.calculateTotal().getValue()
+            item.calculateTotal().getValue().doubleValue()
         );
     }
 }

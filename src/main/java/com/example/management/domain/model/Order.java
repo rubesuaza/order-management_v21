@@ -26,19 +26,41 @@ public class Order {
     private LocalDateTime updatedAt;
 
     public Order(String customerId, List<OrderItem> items) {
+        this(UUID.randomUUID().toString(), customerId, items, OrderStatus.PENDING, 
+             LocalDateTime.now(), LocalDateTime.now());
+    }
+
+    /**
+     * Constructor para reconstruir una orden desde la persistencia.
+     * Solo debe ser usado por adaptadores de infraestructura.
+     */
+    public Order(String id, String customerId, List<OrderItem> items, 
+                 OrderStatus status, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        if (id == null || id.trim().isEmpty()) {
+            throw new IllegalArgumentException("El ID no puede ser nulo o vacío");
+        }
         if (customerId == null || customerId.trim().isEmpty()) {
             throw new IllegalArgumentException("El ID del cliente no puede ser nulo o vacío");
         }
         if (items == null || items.isEmpty()) {
             throw new IllegalArgumentException("El pedido debe tener al menos un item");
         }
+        if (status == null) {
+            throw new IllegalArgumentException("El estado no puede ser nulo");
+        }
+        if (createdAt == null) {
+            throw new IllegalArgumentException("La fecha de creación no puede ser nula");
+        }
+        if (updatedAt == null) {
+            throw new IllegalArgumentException("La fecha de actualización no puede ser nula");
+        }
         
-        this.id = UUID.randomUUID().toString();
+        this.id = id;
         this.customerId = customerId.trim();
         this.items = new ArrayList<>(items);
-        this.status = OrderStatus.PENDING;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.status = status;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     public String getId() {
@@ -69,11 +91,9 @@ public class Order {
      * Calcula el total del pedido sumando los totales de todos los items.
      */
     public Money calculateTotal() {
-        Money total = new Money(0.0);
-        for (OrderItem item : items) {
-            total = total.add(item.calculateTotal());
-        }
-        return total;
+        return items.stream()
+            .map(OrderItem::calculateTotal)
+            .reduce(new Money(0.0), Money::add);
     }
 
     /**
@@ -159,7 +179,7 @@ public class Order {
                 ", customerId='" + customerId + '\'' +
                 ", status=" + status +
                 ", itemsCount=" + items.size() +
-                ", total=" + calculateTotal().getValue() +
+                ", total=" + calculateTotal().getValue().doubleValue() +
                 ", createdAt=" + createdAt +
                 '}';
     }

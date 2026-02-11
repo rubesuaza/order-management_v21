@@ -122,6 +122,6 @@ class JpaOrderRepositoryTest {
         assertThat(order.getItems()).hasSize(2);
         assertThat(order.getItems().get(0).getProductId()).isEqualTo("PROD-001");
         assertThat(order.getItems().get(1).getProductId()).isEqualTo("PROD-002");
-        assertThat(order.calculateTotal().getValue()).isEqualTo(35.0); // 10*2 + 15*1
+        assertThat(order.calculateTotal().getValue().doubleValue()).isEqualTo(35.0); // 10*2 + 15*1
     }
 }

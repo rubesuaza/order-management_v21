@@ -3,11 +3,12 @@ package com.example.management.infrastructure.adapters.in.rest;
 import com.example.management.application.ports.in.*;
 import com.example.management.domain.model.Money;
 import com.example.management.domain.model.Order;
+import com.example.management.domain.model.OrderId;
 import com.example.management.domain.model.OrderItem;
-import com.example.management.domain.model.OrderStatus;
 import com.example.management.domain.model.Quantity;
 import com.example.management.infrastructure.adapters.in.rest.dto.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -50,19 +51,29 @@ class OrderRestControllerTest {
     @MockBean
     private AddOrderItemUseCase addOrderItemUseCase;
 
+    private OrderItem testItem;
+    private Order testOrder;
+    private String testOrderId;
+    private String testCustomerId;
+
+    @BeforeEach
+    void setUp() {
+        testCustomerId = "CUSTOMER-001";
+        testItem = new OrderItem("PROD-001", "Producto 1", new Money(10.0), new Quantity(2));
+        testOrder = new Order(testCustomerId, Arrays.asList(testItem));
+        testOrderId = testOrder.getId();
+    }
+
     @Test
     void shouldCreateOrder() throws Exception {
         // Given
-        OrderItem item1 = new OrderItem("PROD-001", "Producto 1", new Money(10.0), new Quantity(2));
-        Order order = new Order("CUSTOMER-001", Arrays.asList(item1));
-        
         CreateOrderRequest request = new CreateOrderRequest(
-            "CUSTOMER-001",
+            testCustomerId,
             Arrays.asList(new OrderItemRequest("PROD-001", "Producto 1", 10.0, 2))
         );
 
         when(createOrderUseCase.createOrder(any(String.class), any(List.class)))
-            .thenReturn(order);
+            .thenReturn(testOrder);
 
         // When & Then
         mockMvc.perform(post("/api/orders")
@@ -70,7 +81,7 @@ class OrderRestControllerTest {
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.id").exists())
-            .andExpect(jsonPath("$.customerId").value("CUSTOMER-001"))
+            .andExpect(jsonPath("$.customerId").value(testCustomerId))
             .andExpect(jsonPath("$.status").value("PENDING"))
             .andExpect(jsonPath("$.items").isArray())
             .andExpect(jsonPath("$.items[0].productId").value("PROD-001"));
@@ -79,24 +90,20 @@ class OrderRestControllerTest {
     @Test
     void shouldGetOrder() throws Exception {
         // Given
-        OrderItem item1 = new OrderItem("PROD-001", "Producto 1", new Money(10.0), new Quantity(2));
-        Order order = new Order("CUSTOMER-001", Arrays.asList(item1));
-        String orderId = order.getId();
-
-        when(getOrderUseCase.getOrder(orderId))
-            .thenReturn(Optional.of(order));
+        when(getOrderUseCase.getOrder(any(OrderId.class)))
+            .thenReturn(Optional.of(testOrder));
 
         // When & Then
-        mockMvc.perform(get("/api/orders/{orderId}", orderId))
+        mockMvc.perform(get("/api/orders/{orderId}", testOrderId))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(orderId))
-            .andExpect(jsonPath("$.customerId").value("CUSTOMER-001"));
+            .andExpect(jsonPath("$.id").value(testOrderId))
+            .andExpect(jsonPath("$.customerId").value(testCustomerId));
     }
 
     @Test
     void shouldReturnNotFoundWhenOrderDoesNotExist() throws Exception {
         // Given
-        when(getOrderUseCase.getOrder("NON-EXISTENT"))
+        when(getOrderUseCase.getOrder(any(OrderId.class)))
             .thenReturn(Optional.empty());
 
         // When & Then
@@ -107,16 +114,12 @@ class OrderRestControllerTest {
     @Test
     void shouldConfirmOrder() throws Exception {
         // Given
-        OrderItem item1 = new OrderItem("PROD-001", "Producto 1", new Money(10.0), new Quantity(2));
-        Order order = new Order("CUSTOMER-001", Arrays.asList(item1));
-        order.confirm();
-        String orderId = order.getId();
-
-        when(updateOrderStatusUseCase.confirmOrder(orderId))
-            .thenReturn(order);
+        testOrder.confirm();
+        when(updateOrderStatusUseCase.confirmOrder(any(OrderId.class)))
+            .thenReturn(testOrder);
 
         // When & Then
-        mockMvc.perform(post("/api/orders/{orderId}/confirm", orderId))
+        mockMvc.perform(post("/api/orders/{orderId}/confirm", testOrderId))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("CONFIRMED"));
     }
@@ -124,17 +127,13 @@ class OrderRestControllerTest {
     @Test
     void shouldShipOrder() throws Exception {
         // Given
-        OrderItem item1 = new OrderItem("PROD-001", "Producto 1", new Money(10.0), new Quantity(2));
-        Order order = new Order("CUSTOMER-001", Arrays.asList(item1));
-        order.confirm();
-        order.ship();
-        String orderId = order.getId();
-
-        when(updateOrderStatusUseCase.shipOrder(orderId))
-            .thenReturn(order);
+        testOrder.confirm();
+        testOrder.ship();
+        when(updateOrderStatusUseCase.shipOrder(any(OrderId.class)))
+            .thenReturn(testOrder);
 
         // When & Then
-        mockMvc.perform(post("/api/orders/{orderId}/ship", orderId))
+        mockMvc.perform(post("/api/orders/{orderId}/ship", testOrderId))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("SHIPPED"));
     }
@@ -142,18 +141,14 @@ class OrderRestControllerTest {
     @Test
     void shouldDeliverOrder() throws Exception {
         // Given
-        OrderItem item1 = new OrderItem("PROD-001", "Producto 1", new Money(10.0), new Quantity(2));
-        Order order = new Order("CUSTOMER-001", Arrays.asList(item1));
-        order.confirm();
-        order.ship();
-        order.deliver();
-        String orderId = order.getId();
-
-        when(updateOrderStatusUseCase.deliverOrder(orderId))
-            .thenReturn(order);
+        testOrder.confirm();
+        testOrder.ship();
+        testOrder.deliver();
+        when(updateOrderStatusUseCase.deliverOrder(any(OrderId.class)))
+            .thenReturn(testOrder);
 
         // When & Then
-        mockMvc.perform(post("/api/orders/{orderId}/deliver", orderId))
+        mockMvc.perform(post("/api/orders/{orderId}/deliver", testOrderId))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("DELIVERED"));
     }
@@ -161,16 +156,12 @@ class OrderRestControllerTest {
     @Test
     void shouldCancelOrder() throws Exception {
         // Given
-        OrderItem item1 = new OrderItem("PROD-001", "Producto 1", new Money(10.0), new Quantity(2));
-        Order order = new Order("CUSTOMER-001", Arrays.asList(item1));
-        order.cancel();
-        String orderId = order.getId();
-
-        when(updateOrderStatusUseCase.cancelOrder(orderId))
-            .thenReturn(order);
+        testOrder.cancel();
+        when(updateOrderStatusUseCase.cancelOrder(any(OrderId.class)))
+            .thenReturn(testOrder);
 
         // When & Then
-        mockMvc.perform(post("/api/orders/{orderId}/cancel", orderId))
+        mockMvc.perform(post("/api/orders/{orderId}/cancel", testOrderId))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("CANCELLED"));
     }
@@ -178,22 +169,18 @@ class OrderRestControllerTest {
     @Test
     void shouldAddItemToOrder() throws Exception {
         // Given
-        OrderItem item1 = new OrderItem("PROD-001", "Producto 1", new Money(10.0), new Quantity(2));
-        Order order = new Order("CUSTOMER-001", Arrays.asList(item1));
-        String orderId = order.getId();
-        
         OrderItem newItem = new OrderItem("PROD-002", "Producto 2", new Money(15.0), new Quantity(1));
-        order.addItem(newItem);
+        testOrder.addItem(newItem);
 
         AddOrderItemRequest request = new AddOrderItemRequest(
             "PROD-002", "Producto 2", 15.0, 1
         );
 
-        when(addOrderItemUseCase.addItemToOrder(eq(orderId), any(OrderItem.class)))
-            .thenReturn(order);
+        when(addOrderItemUseCase.addItemToOrder(any(OrderId.class), any(OrderItem.class)))
+            .thenReturn(testOrder);
 
         // When & Then
-        mockMvc.perform(post("/api/orders/{orderId}/items", orderId)
+        mockMvc.perform(post("/api/orders/{orderId}/items", testOrderId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isOk())

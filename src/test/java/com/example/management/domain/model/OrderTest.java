@@ -36,7 +36,7 @@ class OrderTest {
         Order order = new Order("CUST-001", items);
         Money total = order.calculateTotal();
         
-        assertEquals(65.0, total.getValue(), 0.001); // (10*2) + (15*3) = 20 + 45 = 65
+        assertEquals(65.0, total.getValue().doubleValue(), 0.001); // (10*2) + (15*3) = 20 + 45 = 65
     }
 
     @Test
@@ -173,7 +173,7 @@ class OrderTest {
         order.addItem(newItem);
         
         assertEquals(2, order.getItems().size());
-        assertEquals(50.0, order.calculateTotal().getValue(), 0.001);
+        assertEquals(50.0, order.calculateTotal().getValue().doubleValue(), 0.001);
     }
 
     @Test

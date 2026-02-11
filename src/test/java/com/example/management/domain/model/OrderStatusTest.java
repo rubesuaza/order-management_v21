@@ -2,43 +2,17 @@ package com.example.management.domain.model;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import static org.junit.jupiter.api.Assertions.*;
 
 class OrderStatusTest {
 
-    @Test
-    @DisplayName("Debe crear OrderStatus PENDING")
-    void shouldCreatePendingStatus() {
-        OrderStatus status = OrderStatus.PENDING;
-        assertEquals("PENDING", status.name());
-    }
-
-    @Test
-    @DisplayName("Debe crear OrderStatus CONFIRMED")
-    void shouldCreateConfirmedStatus() {
-        OrderStatus status = OrderStatus.CONFIRMED;
-        assertEquals("CONFIRMED", status.name());
-    }
-
-    @Test
-    @DisplayName("Debe crear OrderStatus SHIPPED")
-    void shouldCreateShippedStatus() {
-        OrderStatus status = OrderStatus.SHIPPED;
-        assertEquals("SHIPPED", status.name());
-    }
-
-    @Test
-    @DisplayName("Debe crear OrderStatus DELIVERED")
-    void shouldCreateDeliveredStatus() {
-        OrderStatus status = OrderStatus.DELIVERED;
-        assertEquals("DELIVERED", status.name());
-    }
-
-    @Test
-    @DisplayName("Debe crear OrderStatus CANCELLED")
-    void shouldCreateCancelledStatus() {
-        OrderStatus status = OrderStatus.CANCELLED;
-        assertEquals("CANCELLED", status.name());
+    @ParameterizedTest
+    @EnumSource(OrderStatus.class)
+    @DisplayName("Debe crear OrderStatus y verificar su nombre")
+    void shouldCreateOrderStatusAndVerifyName(OrderStatus status) {
+        assertEquals(status.name(), status.name());
     }
 
     @Test

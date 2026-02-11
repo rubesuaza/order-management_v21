@@ -10,14 +10,14 @@ class MoneyTest {
     @DisplayName("Debe crear Money con valor positivo")
     void shouldCreateMoneyWithPositiveValue() {
         Money money = new Money(100.50);
-        assertEquals(100.50, money.getValue(), 0.001);
+        assertEquals(100.50, money.getValue().doubleValue(), 0.001);
     }
 
     @Test
     @DisplayName("Debe crear Money con valor cero")
     void shouldCreateMoneyWithZeroValue() {
         Money money = new Money(0.0);
-        assertEquals(0.0, money.getValue(), 0.001);
+        assertEquals(0.0, money.getValue().doubleValue(), 0.001);
     }
 
     @Test
@@ -35,7 +35,7 @@ class MoneyTest {
         Money money2 = new Money(50.5);
         Money result = money1.add(money2);
         
-        assertEquals(150.5, result.getValue(), 0.001);
+        assertEquals(150.5, result.getValue().doubleValue(), 0.001);
     }
 
     @Test
@@ -44,7 +44,7 @@ class MoneyTest {
         Money money = new Money(10.0);
         Money result = money.multiply(3);
         
-        assertEquals(30.0, result.getValue(), 0.001);
+        assertEquals(30.0, result.getValue().doubleValue(), 0.001);
     }
 
     @Test

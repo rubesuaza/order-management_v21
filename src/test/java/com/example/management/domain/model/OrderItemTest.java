@@ -31,7 +31,7 @@ class OrderItemTest {
         
         Money total = item.calculateTotal();
         
-        assertEquals(30.0, total.getValue(), 0.001);
+        assertEquals(30.0, total.getValue().doubleValue(), 0.001);
     }
 
     @Test

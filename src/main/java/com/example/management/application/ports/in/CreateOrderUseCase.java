@@ -1,7 +1,7 @@
 package com.example.management.application.ports.in;
 
+import com.example.management.application.commands.CreateOrderItemCommand;
 import com.example.management.domain.model.Order;
-import com.example.management.domain.model.OrderItem;
 import java.util.List;
 
 /**
@@ -11,8 +11,8 @@ public interface CreateOrderUseCase {
     /**
      * Crea una nueva orden.
      * @param customerId El ID del cliente
-     * @param items La lista de items de la orden
+     * @param itemCommands La lista de comandos para crear items de la orden
      * @return La orden creada
      */
-    Order createOrder(String customerId, List<OrderItem> items);
+    Order createOrder(String customerId, List<CreateOrderItemCommand> itemCommands);
 }
